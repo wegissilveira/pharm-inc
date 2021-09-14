@@ -37,7 +37,8 @@ export const patientsSlice = createSlice({
       .addCase(fetchPatients.fulfilled, (state, action) => {
         state.status = 'idle'
         state.page += 1
-        state.patients = [...state.patients, ...action.payload.results]
+        // state.patients = [...state.patients, ...action.payload.results]
+        state.patients = state.patients.concat(action.payload.results)
       })
       .addCase(fetchPatients.rejected, (state) => {
         state.status = 'failed'
