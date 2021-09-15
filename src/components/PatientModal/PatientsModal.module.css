@@ -3,12 +3,16 @@
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.438);
     position: fixed;
+    top: 0;
     z-index: 2222;
+
+    /*display: none; /* Temporário */
 }
 
 .Modal-container {
     width: 75vh;
-    height: 75vh;
+    height: fit-content;
+    min-height: 75vh;
     background-color: #fff;
     position: absolute;
     left: 50%;
@@ -27,6 +31,7 @@
     background-color: #ccc;
     position: absolute;
     left: 50%;
+    overflow: hidden;
 
     transform:translate(-50%, -50%);
     -webkit-transform:translate(-50%, -50%);
@@ -39,6 +44,10 @@
     -moz-border-radius: 50%;
     -ms-border-radius: 50%;
     -o-border-radius: 50%;
+}
+
+.Modal-patientImg-container > img {
+    max-width: 100%;
 }
 
 .Modal-patientName {

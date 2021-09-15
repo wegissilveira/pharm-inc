@@ -27,9 +27,6 @@ export default interface IPatientsData {
         country: string,
         postcode: number,
     },
-    id: {
-        name: string,
-        value: string
-    },
+    id: number,
     url?: string
 }

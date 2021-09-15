@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'store/store'
 
 import http from 'services/services' 
@@ -8,13 +8,13 @@ import IPatientsData from 'models/PatientsModel'
 export interface PatientsState {
   patients: IPatientsData[],
   page: number;
-  status: 'idle' | 'loading' | 'failed'
+  status: 'success' | 'loading' | 'failed'
 }
 
 const initialState: PatientsState = {
   patients: [],
   page: 1,
-  status: 'idle',
+  status: 'loading',
 }
 
 export const fetchPatients = createAsyncThunk(
@@ -35,9 +35,8 @@ export const patientsSlice = createSlice({
         state.status = 'loading'
       })
       .addCase(fetchPatients.fulfilled, (state, action) => {
-        state.status = 'idle'
+        state.status = 'success'
         state.page += 1
-        // state.patients = [...state.patients, ...action.payload.results]
         state.patients = state.patients.concat(action.payload.results)
       })
       .addCase(fetchPatients.rejected, (state) => {
