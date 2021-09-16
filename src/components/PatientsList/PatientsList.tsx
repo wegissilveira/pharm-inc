@@ -3,12 +3,13 @@ import React from 'react'
 import { useAppSelector, useAppDispatch } from 'store/hooks'
 import { fetchPatients, getData} from 'features/patients/patientsSlice'
 
-import { Table, Button, Space, Spin, } from 'antd'
+import { Table, Button, Space, Spin} from 'antd'
 import 'antd/dist/antd.css'
 
 import { Route, RouteComponentProps } from 'react-router'
 
 import PatientsModal from 'components/PatientModal/PatientModal'
+import PatientsListFilter from 'components/PatientsListFilter/PatientsListFilter'
 
 import IPatientsData from 'models/PatientsModel'
 
@@ -25,14 +26,18 @@ interface MyComponent extends RouteComponentProps {}
 
 export const itemsPerPage = 10
 
+// const { Search } = Input
+
 
 const PatientsList: React.FC<MyComponent> = ({history}) => {
 
     let [initialMount, setInitialMount] = React.useState(true)
     let [patientsTable, setPatientsTable] = React.useState<IDataSource[]>([])
+    let [backupList, setBackupList] = React.useState<IDataSource[]>([])
     let [patients, setPatients] = React.useState<IPatientsData[]>([])
     let [currentPatientId, setCurrentPatientId] = React.useState<string>('')
     let [currentPage, setCurrentPage] = React.useState<string>('')
+    // let [search, setSearch] = React.useState<string>('')
 
     const patientsFetch = useAppSelector(getData)
     const dispatch = useAppDispatch()
@@ -74,6 +79,49 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
             ),
         },
     ]   
+
+    // const updateSearchHandler = (value: string) => {
+    //     setSearch(value)
+    // }
+
+    const filterTablePerNameHandler = (search: string) => {
+        let patientsFiltered = [...backupList]
+        
+        patientsFiltered = patientsFiltered.filter((patient, index) => {
+            let lowName = patient.name.toLowerCase()
+            let lowSearch = search.toLowerCase()
+            return lowName.includes(lowSearch)
+        })
+
+        if (patientsFiltered.length > 0) {
+            setPatientsTable(() => patientsFiltered)
+        } else {
+            alert('There is no patient with the entered name!')
+        }
+        
+    }
+
+    const filterTablePerGenderHandler = (filter: string) => {
+        
+        if (filter !== 'both') {
+            let patientsFiltered = [...backupList]
+        
+            patientsFiltered = patientsFiltered.filter((patient, index) => {
+                let lowName = patient.gender.toLowerCase()
+                let lowSearch = filter.toLowerCase()
+                return lowName === lowSearch
+            })
+    
+            setPatientsTable(patientsFiltered)
+
+        } else {
+            setPatientsTable(backupList)
+        }
+    }
+
+    const ResetSearchHandler = () => {
+        setPatientsTable(backupList)
+    }
     
     const loadPatientsHandler = React.useCallback(() => {
         let path = history.location.pathname
@@ -126,21 +174,20 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
 
     React.useEffect(() => {
         let updatedPatientsList = [...patientsFetch.patients]
-        let path = history.location.pathname
+        let baseURL = window.location.hostname === 'localhost' ? window.location.host : process.env.PUBLIC_URL
 
         updatedPatientsList = updatedPatientsList.map((patient, index) => {
             return ({
                 ...patient,
                 id: index+1,
-                // url: `${process.env.PUBLIC_URL}/id:${index+1}`,
-                url: `${process.env.PUBLIC_URL}${path}`,
+                url: `${baseURL}/page=${currentPage}&id:${index+1}`,
                 birthDate: formatDateHandler(patient.dob.date)
             })
         })
 
         setPatients(updatedPatientsList)
 
-    }, [patientsFetch.patients, history])
+    }, [patientsFetch.patients, history, currentPage])
     
     React.useEffect(() => {
         let dataSource: IDataSource[] = []
@@ -165,6 +212,8 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
         })
 
         setPatientsTable(() => dataSource)
+        setBackupList(dataSource)
+
     }, [patientsFetch.patients])
    
     React.useEffect(() => {
@@ -197,14 +246,18 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                         direction="vertical"
                         style={{width: '90%', marginLeft: '5%'}}
                     >
+                    <PatientsListFilter 
+                        searchCallback={filterTablePerNameHandler}
+                        searchPerGenderCallback={filterTablePerGenderHandler}
+                        resetSearchCallback={ResetSearchHandler}
+                    />
+                    <br />
                     <Table 
                         dataSource={patientsTable} 
                         columns={columns} 
-                        title={() => 'Patients List'}
                         bordered
                         pagination={false}
                     />
-                    {/* <Button onClick={() => dispatch(fetchPatients(incrementPage))} >Load More Patients</Button> */}
                     <Button onClick={loadPatientsHandler} >Load More Patients</Button>
                     </Space>
                 </React.Fragment>
