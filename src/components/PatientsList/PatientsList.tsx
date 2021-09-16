@@ -23,6 +23,8 @@ export interface IDataSource {
 
 interface MyComponent extends RouteComponentProps {}
 
+export const itemsPerPage = 10
+
 
 const PatientsList: React.FC<MyComponent> = ({history}) => {
 
@@ -30,12 +32,13 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     let [patientsTable, setPatientsTable] = React.useState<IDataSource[]>([])
     let [patients, setPatients] = React.useState<IPatientsData[]>([])
     let [currentPatientId, setCurrentPatientId] = React.useState<string>('')
+    let [currentPage, setCurrentPage] = React.useState<string>('')
 
     const patientsFetch = useAppSelector(getData)
     const dispatch = useAppDispatch()
 
-    const incrementPage = patientsFetch.page
-
+    // const incrementPage = patientsFetch.page
+    
     const columns = [
         {
             title: 'Name',
@@ -64,7 +67,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
             render: (text: string, record: any) => (
                 <Button 
                     type="primary"
-                    onClick={() => toggleModal(record.id)}
+                    onClick={() => toggleModalHandler(record.id)}
                 >
                     Visualizar
                 </Button>
@@ -72,35 +75,72 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
         },
     ]   
     
-    const toggleModal = (id: String | null, open?: boolean) => {
-        if (open === false) {
-            history.push(`${process.env.PUBLIC_URL}`)
+    const loadPatientsHandler = React.useCallback(() => {
+        let path = history.location.pathname
+        let page = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
+                
+        if (initialMount) {
+            if (page === '') {
+                page = '1'
+                history.push(`${process.env.PUBLIC_URL}/page=1&`)
+            } else {
+                history.push(`${process.env.PUBLIC_URL}${history.location.pathname}`)
+            }
+
+            Array.from(Array(Number(page)).keys()).forEach((page, index) => {
+                let pageFetch = index + 1
+                dispatch(fetchPatients(pageFetch))
+            })
+
         } else {
-            history.push(`${process.env.PUBLIC_URL}/id:${id}`)
+            console.log(page)
+            let newPage = Number(page) + 1
+            history.push(`${process.env.PUBLIC_URL}/page=${newPage}&`)
+            dispatch(fetchPatients(Number(page)))
+        }        
+        
+        setCurrentPage(page)
+        setInitialMount(false)
+    }, [dispatch, history, initialMount])
+    
+    const toggleModalHandler = (id: String | null, open?: boolean) => {
+        let path = history.location.pathname
+        
+        if (open === false) {
+            history.push(`${process.env.PUBLIC_URL}/page=${currentPage}&`)
+        } else {
+            history.push(`${process.env.PUBLIC_URL}${path}id:${id}`)
         }
+    }
+
+    const formatDateHandler = (date: any) => {
+        return (date).substr(0, date.indexOf('T'))
     }
 
     React.useEffect(() => {
         if (initialMount) {
-            dispatch(fetchPatients(incrementPage))
+            loadPatientsHandler()
             setInitialMount(false)
         }
-    }, [incrementPage, dispatch, initialMount])
+    }, [loadPatientsHandler, initialMount])
 
     React.useEffect(() => {
         let updatedPatientsList = [...patientsFetch.patients]
+        let path = history.location.pathname
 
         updatedPatientsList = updatedPatientsList.map((patient, index) => {
             return ({
                 ...patient,
                 id: index+1,
-                url: `${process.env.PUBLIC_URL}/id:${index+1}`
+                // url: `${process.env.PUBLIC_URL}/id:${index+1}`,
+                url: `${process.env.PUBLIC_URL}${path}`,
+                birthDate: formatDateHandler(patient.dob.date)
             })
         })
 
         setPatients(updatedPatientsList)
 
-    }, [patientsFetch.patients])
+    }, [patientsFetch.patients, history])
     
     React.useEffect(() => {
         let dataSource: IDataSource[] = []
@@ -118,7 +158,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
             newObj.key = index
             newObj.name = `${patient.name.title} ${patient.name.first} ${patient.name.last}`
             newObj.gender = patient.gender
-            newObj.birth = patient.dob.date
+            newObj.birth = formatDateHandler(patient.dob.date)
             newObj.id = index+1
     
             dataSource.push(newObj)
@@ -128,24 +168,28 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     }, [patientsFetch.patients])
    
     React.useEffect(() => {
-        let id = (history.location.pathname).replace( /^\D+/g, '')
+        let id = ''
+        let path = history.location.pathname
+        if (path.indexOf('id:') !== -1) {
+            id = path.substr(path.indexOf(':') + 1)
+        }
+
         setCurrentPatientId(id)
     }, [history.location.pathname])
 
 
     return (
         <div>
-            {patients.length > 0 &&
+            {patients.length >= (Number(currentPage) * itemsPerPage) &&
                 <React.Fragment>
                     <Route 
-                        path={`${process.env.PUBLIC_URL}/id:${currentPatientId}`}
+                        path={`${process.env.PUBLIC_URL}/page=${currentPage}&id:${currentPatientId}`}
                         render={() => {
                             return (
-                                
-                                    <PatientsModal 
-                                        currentPatient={patients[Number(currentPatientId) -1]}
-                                        toggleModal={toggleModal}
-                                    />
+                                <PatientsModal 
+                                    currentPatient={patients[Number(currentPatientId) -1]}
+                                    toggleModal={toggleModalHandler}
+                                />
                             )
                         }}
                     />
@@ -160,7 +204,8 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                         bordered
                         pagination={false}
                     />
-                    <Button onClick={() => dispatch(fetchPatients(incrementPage))} >Load More Patients</Button>
+                    {/* <Button onClick={() => dispatch(fetchPatients(incrementPage))} >Load More Patients</Button> */}
+                    <Button onClick={loadPatientsHandler} >Load More Patients</Button>
                     </Space>
                 </React.Fragment>
             }

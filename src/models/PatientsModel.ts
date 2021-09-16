@@ -28,5 +28,6 @@ export default interface IPatientsData {
         postcode: number,
     },
     id: number,
-    url?: string
+    url?: string,
+    birthDate: string
 }

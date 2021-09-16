@@ -11,7 +11,9 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Switch>
-          <Route path={`${process.env.PUBLIC_URL}/`} component={PatientsList} /> 
+          <Route 
+            path={`${process.env.PUBLIC_URL}/`} 
+            component={PatientsList}/> 
           {/* <Route path={`${process.env.PUBLIC_URL}/patient/:id`} component={PatientsModal} />  */}
         </Switch>
       </Layout>

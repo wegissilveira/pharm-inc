@@ -19,7 +19,6 @@ type Props = StateProps
 
 const PatientsModal: React.FC<Props> = props => {
     
-    let [ birthDate, setBirthDate] =  React.useState<string>('')
     let [ address, setAddress] =  React.useState<string>('')
     let [ fullName, setFullName] =  React.useState<string>('')
 
@@ -28,18 +27,13 @@ const PatientsModal: React.FC<Props> = props => {
         name,
         email, 
         gender, 
-        dob, 
+        birthDate, 
         phone, 
         nat, 
         location, 
         id, 
         url 
     } = props.currentPatient 
-
-
-    React.useEffect(() => {
-        setBirthDate((dob.date).substr(0, dob.date.indexOf('T')))
-    }, [dob.date])
 
     React.useEffect(() => {
         let formattedAddress = `
