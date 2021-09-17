@@ -1,4 +1,3 @@
-# ![Pharma Inc](https://github.com/wegissilveira/tractian-test/blob/master/images-demo/overview.png)
 # Pharma Inc
 Esta aplicação é a realização do desafio front-end proposto pela [coodesh](http://coodesh.com/).
 <table>
@@ -13,23 +12,23 @@ Esta aplicação é a realização do desafio front-end proposto pela [coodesh](
 </table>
 
 ## Demo
-Here is a working live demo :  http://wegis.com.br/tractian/#/tractian/
+Here is a working live demo :  http://wegis.com.br/pharma-inc/#/pharma-inc/
 
 
 ## Website
 
 ### Página inicial
 
-![](https://github.com/wegissilveira/tractian-test/blob/master/images-demo/assets.png)
+![](https://github.com/wegissilveira/pharm-inc/blob/master/images-demo/home.png)
 
 ### Modal com detalhes do usuário
-![](https://github.com/wegissilveira/tractian-test/blob/master/images-demo/asset-uni.png)
+![](https://github.com/wegissilveira/pharm-inc/blob/master/images-demo/modal.png)
 
 
 ## Responsividade
 <em>Pharma Inc</em> é compatível com dispositivos de todos os tamanhos.
 
-![](https://github.com/wegissilveira/tractian-test/blob/master/images-demo/overview-mobile.png)
+![](https://github.com/wegissilveira/pharm-inc/blob/master/images-demo/mobile.png)
 
 
 ### Para rodar o projeto:
