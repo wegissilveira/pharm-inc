@@ -11,3 +11,19 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ant-btn {
+  border-color: #1190ca!important;
+  color: #1190ca!important;
+}
+
+.ant-btn-primary {
+  background-color: #1190ca!important;
+  color: #fff!important;
+  
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  border-color: #1190ca!important;
+  color: #1190ca!important;
+}

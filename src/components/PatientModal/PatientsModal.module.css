@@ -4,15 +4,12 @@
     background-color: rgba(0, 0, 0, 0.438);
     position: fixed;
     top: 0;
-    z-index: 2222;
-
-    /*display: none; /* Temporário */
+    z-index: 9999;
 }
 
 .Modal-container {
-    width: 75vh;
+    width: 90%;
     height: fit-content;
-    min-height: 75vh;
     background-color: #fff;
     position: absolute;
     left: 50%;
@@ -25,9 +22,21 @@
     -o-transform: translate(-50%, -45%);
 }
 
+@media (min-width: 768px) {
+    .Modal-container {
+        width: 80%;
+    }
+}
+
+@media (min-width: 1366px) {
+    .Modal-container {
+        width: 40%;
+    }
+}
+
 .Modal-patientImg-container {
-    width: 27%;
-    height: 27%;
+    width: 120px;
+    height: 120px;
     background-color: #ccc;
     position: absolute;
     left: 50%;

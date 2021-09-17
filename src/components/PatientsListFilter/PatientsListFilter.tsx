@@ -1,6 +1,8 @@
 import React from 'react'
 
-import { Input, Button, Select, Radio  } from 'antd'
+import classes from './PatientsListFilter.module.css'
+
+import { Input, Button, Radio  } from 'antd'
 import 'antd/dist/antd.css'
 
 
@@ -16,7 +18,7 @@ const { Search } = Input
 
 
 const PatientsListFilter: React.FC<Props> = props => {
-
+    
     let [inputValue, setInputValue] = React.useState<string>('')
     const [size, setSize] = React.useState('both')
 
@@ -40,7 +42,7 @@ const PatientsListFilter: React.FC<Props> = props => {
 
 
     return (
-        <React.Fragment>
+        <div className={classes['Filter-container']}>
             <div>
                 <Search 
                     value={inputValue}
@@ -65,7 +67,7 @@ const PatientsListFilter: React.FC<Props> = props => {
                     <Radio.Button value="male">Male</Radio.Button>
                 </Radio.Group>
             </div>
-        </React.Fragment>
+        </div>
     )
 }
 

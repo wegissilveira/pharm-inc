@@ -7,13 +7,11 @@ import IPatientsData from 'models/PatientsModel'
 
 export interface PatientsState {
   patients: IPatientsData[],
-  page: number;
   status: 'success' | 'loading' | 'failed'
 }
 
 const initialState: PatientsState = {
   patients: [],
-  page: 1,
   status: 'loading',
 }
 
@@ -36,7 +34,6 @@ export const patientsSlice = createSlice({
       })
       .addCase(fetchPatients.fulfilled, (state, action) => {
         state.status = 'success'
-        state.page += 1
         state.patients = state.patients.concat(action.payload.results)
       })
       .addCase(fetchPatients.rejected, (state) => {

@@ -1,0 +1,19 @@
+.Navigation-container {
+    height: 50px;
+    border-bottom: 1px solid #1190ca;
+    margin-bottom: 80px;
+    background-color: #fff;
+    position: relative;
+    z-index: 9999;
+}
+
+.Navigation-subContainer {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.Navigation-subContainer img {
+    height: 35px;
+}

@@ -10,6 +10,7 @@ import { Route, RouteComponentProps } from 'react-router'
 
 import PatientsModal from 'components/PatientModal/PatientModal'
 import PatientsListFilter from 'components/PatientsListFilter/PatientsListFilter'
+import FloatingButton from 'components/FloatingButton/FloatingButton'
 
 import IPatientsData from 'models/PatientsModel'
 
@@ -24,9 +25,7 @@ export interface IDataSource {
 
 interface MyComponent extends RouteComponentProps {}
 
-export const itemsPerPage = 10
-
-// const { Search } = Input
+export const itemsPerPage = 50
 
 
 const PatientsList: React.FC<MyComponent> = ({history}) => {
@@ -36,13 +35,11 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     let [backupList, setBackupList] = React.useState<IDataSource[]>([])
     let [patients, setPatients] = React.useState<IPatientsData[]>([])
     let [currentPatientId, setCurrentPatientId] = React.useState<string>('')
-    let [currentPage, setCurrentPage] = React.useState<string>('')
-    // let [search, setSearch] = React.useState<string>('')
+    let [currentPage, setCurrentPage] = React.useState<string | number>('')
+    let [totalItemsFetched, setTotalItemsFetched] = React.useState<number>(0)
 
     const patientsFetch = useAppSelector(getData)
     const dispatch = useAppDispatch()
-
-    // const incrementPage = patientsFetch.page
     
     const columns = [
         {
@@ -80,10 +77,6 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
         },
     ]   
 
-    // const updateSearchHandler = (value: string) => {
-    //     setSearch(value)
-    // }
-
     const filterTablePerNameHandler = (search: string) => {
         let patientsFiltered = [...backupList]
         
@@ -102,7 +95,6 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     }
 
     const filterTablePerGenderHandler = (filter: string) => {
-        
         if (filter !== 'both') {
             let patientsFiltered = [...backupList]
         
@@ -125,8 +117,8 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     
     const loadPatientsHandler = React.useCallback(() => {
         let path = history.location.pathname
-        let page = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
-                
+        let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
+
         if (initialMount) {
             if (page === '') {
                 page = '1'
@@ -139,16 +131,19 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                 let pageFetch = index + 1
                 dispatch(fetchPatients(pageFetch))
             })
+            setInitialMount(false)
 
         } else {
-            console.log(page)
             let newPage = Number(page) + 1
             history.push(`${process.env.PUBLIC_URL}/page=${newPage}&`)
-            dispatch(fetchPatients(Number(page)))
+            dispatch(fetchPatients(Number(newPage)))
         }        
+
+        let totalItems = itemsPerPage * (Number(page))
         
         setCurrentPage(page)
-        setInitialMount(false)
+        setTotalItemsFetched(totalItems)
+        
     }, [dispatch, history, initialMount])
     
     const toggleModalHandler = (id: String | null, open?: boolean) => {
@@ -186,8 +181,8 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
         })
 
         setPatients(updatedPatientsList)
-
-    }, [patientsFetch.patients, history, currentPage])
+        
+    }, [patientsFetch.patients, currentPage])
     
     React.useEffect(() => {
         let dataSource: IDataSource[] = []
@@ -210,7 +205,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     
             dataSource.push(newObj)
         })
-
+        
         setPatientsTable(() => dataSource)
         setBackupList(dataSource)
 
@@ -219,20 +214,25 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     React.useEffect(() => {
         let id = ''
         let path = history.location.pathname
+
         if (path.indexOf('id:') !== -1) {
             id = path.substr(path.indexOf(':') + 1)
         }
 
         setCurrentPatientId(id)
     }, [history.location.pathname])
-
+    
+    let path = history.location.pathname
+    let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
+    
 
     return (
         <div>
-            {patients.length >= (Number(currentPage) * itemsPerPage) &&
+            {patients.length >= totalItemsFetched &&
                 <React.Fragment>
+                    <FloatingButton />
                     <Route 
-                        path={`${process.env.PUBLIC_URL}/page=${currentPage}&id:${currentPatientId}`}
+                        path={`${process.env.PUBLIC_URL}/page=${page}&id:${currentPatientId}`}
                         render={() => {
                             return (
                                 <PatientsModal 
@@ -246,19 +246,24 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                         direction="vertical"
                         style={{width: '90%', marginLeft: '5%'}}
                     >
-                    <PatientsListFilter 
-                        searchCallback={filterTablePerNameHandler}
-                        searchPerGenderCallback={filterTablePerGenderHandler}
-                        resetSearchCallback={ResetSearchHandler}
-                    />
-                    <br />
-                    <Table 
-                        dataSource={patientsTable} 
-                        columns={columns} 
-                        bordered
-                        pagination={false}
-                    />
-                    <Button onClick={loadPatientsHandler} >Load More Patients</Button>
+                        <PatientsListFilter 
+                            searchCallback={filterTablePerNameHandler}
+                            searchPerGenderCallback={filterTablePerGenderHandler}
+                            resetSearchCallback={ResetSearchHandler}
+                        />
+                        <br />
+                        <Table 
+                            dataSource={patientsTable} 
+                            columns={columns} 
+                            bordered
+                            pagination={false}
+                        />
+                        <Button 
+                            onClick={loadPatientsHandler} 
+                            loading={patientsFetch.status === 'loading' ? true : false}
+                            style={{width: '20%', marginLeft: '40%', marginTop: "20px", marginBottom: '40px'}}
+                        > Load More Patients
+                        </Button>
                     </Space>
                 </React.Fragment>
             }
