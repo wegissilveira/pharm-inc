@@ -261,7 +261,11 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                         <Button 
                             onClick={loadPatientsHandler} 
                             loading={patientsFetch.status === 'loading' ? true : false}
-                            style={{width: '20%', marginLeft: '40%', marginTop: "20px", marginBottom: '40px'}}
+                            style={{
+                                width: 'fit-content',  
+                                marginTop: "20px", 
+                                marginBottom: '40px'
+                            }}
                         > Load More Patients
                         </Button>
                     </Space>
