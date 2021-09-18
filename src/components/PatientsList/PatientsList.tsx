@@ -118,13 +118,18 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     const loadPatientsHandler = React.useCallback(() => {
         let path = history.location.pathname
         let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
-
+        let id = path.substring(path.lastIndexOf(":") + 1, path.length)
+        
         if (initialMount) {
             if (page === '') {
                 page = '1'
                 history.push(`${process.env.PUBLIC_URL}/page=1&`)
             } else {
-                history.push(`${process.env.PUBLIC_URL}${history.location.pathname}`)
+                if (path.indexOf("id:") !== -1) {
+                    history.push(`${process.env.PUBLIC_URL}/page=${page}&id:${id}`)
+                } else {
+                    history.push(`${process.env.PUBLIC_URL}/page=${page}&`)
+                }
             }
 
             Array.from(Array(Number(page)).keys()).forEach((page, index) => {
@@ -147,12 +152,13 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     }, [dispatch, history, initialMount])
     
     const toggleModalHandler = (id: String | null, open?: boolean) => {
-        let path = history.location.pathname
+        // let path = history.location.pathname
         
         if (open === false) {
             history.push(`${process.env.PUBLIC_URL}/page=${currentPage}&`)
         } else {
-            history.push(`${process.env.PUBLIC_URL}${path}id:${id}`)
+            // history.push(`${process.env.PUBLIC_URL}${path}id:${id}`) // => Caminho para localhost 
+            history.push(`${process.env.PUBLIC_URL}/page=${currentPage}&id:${id}`) // => Caminho para servidor online
         }
     }
 
@@ -169,7 +175,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
 
     React.useEffect(() => {
         let updatedPatientsList = [...patientsFetch.patients]
-        let baseURL = window.location.hostname === 'localhost' ? window.location.host : process.env.PUBLIC_URL
+        let baseURL = window.location.hostname === 'localhost' ? window.location.host : 'https://wegis.com.br/pharma-inc/#'
 
         updatedPatientsList = updatedPatientsList.map((patient, index) => {
             return ({
@@ -225,7 +231,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     let path = history.location.pathname
     let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
     
-
+    
     return (
         <div>
             {patients.length >= totalItemsFetched &&
