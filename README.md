@@ -5,9 +5,6 @@ Esta aplicação é a realização do desafio front-end proposto pela [coodesh](
 <td>
  Pharma Inc é uma aplicação criada para exibir uma lista de pacientes fictícios extraídos da API Random User Generator.
 </td>
-<td>
- Pharma Inc é uma aplicação criada .
-</td>
 </tr>
 </table>
 
