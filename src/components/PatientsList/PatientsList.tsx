@@ -175,7 +175,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
 
     React.useEffect(() => {
         let updatedPatientsList = [...patientsFetch.patients]
-        let baseURL = window.location.hostname === 'localhost' ? window.location.host : 'https://wegis.com.br/pharma-inc/#'
+        let baseURL = window.location.hostname === 'localhost' ? window.location.host : 'https://wegis.com.br/pharma-inc/#/pharma-inc'
 
         updatedPatientsList = updatedPatientsList.map((patient, index) => {
             return ({
