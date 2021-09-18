@@ -9,7 +9,7 @@ Esta aplicação é a realização do desafio front-end proposto pela [coodesh](
 </table>
 
 ## Demo
-Here is a working live demo :  https://wegis.com.br/pharma-inc/#/pharma-inc/
+A página pode ser encontrada aqui :  https://wegis.com.br/pharma-inc/#/pharma-inc/
 
 ## Website
 
