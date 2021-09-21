@@ -71,7 +71,7 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
                     type="primary"
                     onClick={() => toggleModalHandler(record.id)}
                 >
-                    Visualizar
+                    View
                 </Button>
             ),
         },
@@ -153,12 +153,14 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
     
     const toggleModalHandler = (id: String | null, open?: boolean) => {
         // let path = history.location.pathname
+        let path = history.location.pathname
+        let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
         
         if (open === false) {
-            history.push(`${process.env.PUBLIC_URL}/page=${currentPage}&`)
+            history.push(`${process.env.PUBLIC_URL}/page=${page}&`)
         } else {
             // history.push(`${process.env.PUBLIC_URL}${path}id:${id}`) // => Caminho para localhost 
-            history.push(`${process.env.PUBLIC_URL}/page=${currentPage}&id:${id}`) // => Caminho para servidor online
+            history.push(`${process.env.PUBLIC_URL}/page=${page}&id:${id}`) // => Caminho para servidor online
         }
     }
 
@@ -175,20 +177,23 @@ const PatientsList: React.FC<MyComponent> = ({history}) => {
 
     React.useEffect(() => {
         let updatedPatientsList = [...patientsFetch.patients]
-        let baseURL = window.location.hostname === 'localhost' ? window.location.host : 'https://wegis.com.br/pharma-inc/#/pharma-inc'
+        let baseURL = window.location.hostname === 'localhost' ? window.location.host + '/pharma-inc' : 'https://wegis.com.br/pharma-inc/'
+
+        let path = history.location.pathname
+        let page: number | string = path.substring(path.indexOf("=") + 1, path.indexOf("&"))
 
         updatedPatientsList = updatedPatientsList.map((patient, index) => {
             return ({
                 ...patient,
                 id: index+1,
-                url: `${baseURL}/page=${currentPage}&id:${index+1}`,
+                url: `${baseURL}/page=${page}&id:${index+1}`,
                 birthDate: formatDateHandler(patient.dob.date)
             })
         })
 
         setPatients(updatedPatientsList)
         
-    }, [patientsFetch.patients, currentPage])
+    }, [patientsFetch.patients, history])
     
     React.useEffect(() => {
         let dataSource: IDataSource[] = []
