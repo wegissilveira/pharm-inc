@@ -1,0 +1,11 @@
+- Index
+   - App
+      - Layout
+         - Header
+         - PatientsList
+            - FilterComponent
+               - PatientsModalRoute
+                  - PatientsModal  
+               - SearchComponent
+               - PatientsListFilter                  
+            - FloatingButton

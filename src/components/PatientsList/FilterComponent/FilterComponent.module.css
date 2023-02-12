@@ -1,0 +1,9 @@
+.FilterComponent--wrapper {
+   position: fixed; 
+   top: 0;
+   z-index: 6;
+   background: #fff;
+   width: 90%;
+   height: 86px;
+   padding-top: 60px;
+}

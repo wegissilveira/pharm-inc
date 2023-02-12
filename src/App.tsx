@@ -1,8 +1,8 @@
-import { BrowserRouter, HashRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
-import Layout from 'containers/Layout/Layout';
+import Layout from 'containers/Layout/Layout'
 
-import PatientsList from 'components/PatientsList/PatientsList';
+import PatientsList from 'components/PatientsList/PatientsList'
 
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
         </Switch>
       </Layout>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

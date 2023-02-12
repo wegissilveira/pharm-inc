@@ -1,19 +1,16 @@
-import React, { Component } from 'react'
+import { Component } from "react"
 
-import Navigation from 'components/Navigation/Navigation'
-
+import Navigation from "components/Header/Header"
 
 class Layout extends Component {
-    render() {
-        return (
-            <React.Fragment>
-                <Navigation />
-                <main>
-                    { this.props.children }
-                </main>
-            </React.Fragment>
-        )
-    }
+   render() {
+      return (
+         <>
+            <Navigation />
+            <main>{this.props.children}</main>
+         </>
+      )
+   }
 }
 
 export default Layout
