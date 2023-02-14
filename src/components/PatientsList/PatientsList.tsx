@@ -1,14 +1,12 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 import { useAppSelector, useAppDispatch } from "store/hooks"
 import { fetchPatients, getData } from "features/patients/patientsSlice"
 
 import { Table, Button, Space, Spin } from "antd"
 import "antd/dist/antd.css"
+import { useHistory } from "react-router"
 
-import { Route, useHistory } from "react-router"
-
-import PatientsModal from "components/PatientsList/PatientsModalRoute/PatientModal/PatientModal"
 import FloatingButton from "components/PatientsList/FloatingButton/FloatingButton"
 
 import IPatientsData from "models/PatientsModel"
@@ -16,20 +14,30 @@ import FilterComponent from "./FilterComponent/FilterComponent"
 import PatientsModalRoute from "./PatientsModalRoute/PatientsModalRoute"
 
 export interface IDataSource {
-   key: number
+   key: string
    name: string
    gender: string
    birth: string
    id: number
 }
 
+export let itemsPerPage = 50
 
-export const itemsPerPage = 50
+const getPage = () => {
+   const path = window.location.pathname
+   let page: number | string = path.substring(
+      path.indexOf("=") + 1,
+      path.indexOf("&")
+   )   
+
+   return Number(page) 
+}
+
 
 const PatientsList = () => {
-   const [initialMount, setInitialMount] = useState(true)
    const [patientsTable, setPatientsTable] = useState<IDataSource[]>([])
    const [backupList, setBackupList] = useState<IDataSource[]>([])
+   // const [patients, setPatients] = useState<IPatientsData[]>([])
    const [patients, setPatients] = useState<IPatientsData[]>([])
    const [currentPatientId, setCurrentPatientId] = useState<string>("")
    const [totalItemsFetched, setTotalItemsFetched] = useState<number>(0)
@@ -37,6 +45,7 @@ const PatientsList = () => {
    const patientsFetch = useAppSelector(getData)
    const dispatch = useAppDispatch()
 	const history = useHistory()
+   const initialRender = useRef(true)
 
    const columns = [
       {
@@ -78,7 +87,7 @@ const PatientsList = () => {
       let patientsFiltered = [...backupList]
 
       patientsFiltered = patientsFiltered.filter((patient, index) => {
-         let lowName = patient.name.toLowerCase()
+         let lowName: string = patient.name.toLowerCase()
          let lowSearch = search.toLowerCase()
          return lowName.includes(lowSearch)
       })
@@ -118,7 +127,7 @@ const PatientsList = () => {
       )
       let id = path.substring(path.lastIndexOf(":") + 1, path.length)
 
-      if (initialMount) {
+      if (initialRender.current) {
          if (page === "") {
             page = "1"
             history.push(`${process.env.PUBLIC_URL}/page=1&`)
@@ -130,21 +139,24 @@ const PatientsList = () => {
             }
          }
 
-         Array.from(Array(Number(page)).keys()).forEach((page, index) => {
-            let pageFetch = index + 1
-            dispatch(fetchPatients(pageFetch))
-         })
-         setInitialMount(false)
+         // Array.from(Array(Number(page)).keys()).forEach((page, index) => {
+         //    let pageFetch = index + 1
+         //    console.log('pageFetch: ', pageFetch);
+            
+            dispatch(fetchPatients({page: getPage(), isFirstRender: true}))
+         // })
+         initialRender.current = false
       } else {
          let newPage = Number(page) + 1
          history.push(`${process.env.PUBLIC_URL}/page=${newPage}&`)
-         dispatch(fetchPatients(Number(newPage)))
+         // dispatch(fetchPatients(Number(newPage)))
+         dispatch(fetchPatients(({page: Number(newPage), isFirstRender: false})))
       }
 
       let totalItems = itemsPerPage * Number(page)
 
       setTotalItemsFetched(totalItems)
-   }, [dispatch, history, initialMount])
+   }, [dispatch, history])
 
    const toggleModalHandler = (id: String | null, open?: boolean) => {
       // let path = history.location.pathname
@@ -167,11 +179,10 @@ const PatientsList = () => {
    }
 
    useEffect(() => {
-      if (initialMount) {
+      if (initialRender.current) {         
          loadPatientsHandler()
-         setInitialMount(false)
       }
-   }, [loadPatientsHandler, initialMount])
+   }, [loadPatientsHandler])
 
    useEffect(() => {
       let updatedPatientsList = [...patientsFetch.patients]
@@ -198,19 +209,22 @@ const PatientsList = () => {
       setPatients(updatedPatientsList)
    }, [patientsFetch.patients, history])
 
+   // Geral a lista de pacientes inicialmente partir da requisição
+   // Acho que a lista está sendo reconstruída a cada vez que mostrar mais é clicado
+   // O ideal é manter a lista já existente e só acrescentar os novos itens
+   // Analisar se estou refazendo a requisição de tudo ou se estou fazendo a cada 50 e somente completando
+   // Caso esteja só completando basta adaptar para que a state receba 50 de cada vez e não seja reiniciada
+   // Caso contrário a lógica de requisição deve ser refeita, provavelmente há algo na doc
+   // Mas acredito que esteja buscando a cda 50 e não todos todas as vezes
    useEffect(() => {
       let dataSource: IDataSource[] = []
-
+      // console.log('dataSource: ', dataSource);
+      // console.log('patientsTable: ', patientsTable);
+      
       patientsFetch.patients.forEach((patient, index) => {
-         let newObj: IDataSource = {
-            key: 0,
-            name: "",
-            gender: "",
-            birth: "",
-            id: 0,
-         }
+         let newObj = {} as IDataSource
 
-         newObj.key = index
+         newObj.key = patient.name.first+'-'+index
          newObj.name = `${patient.name.title} ${patient.name.first} ${patient.name.last}`
          newObj.gender = patient.gender
          newObj.birth = formatDateHandler(patient.dob.date)
@@ -218,11 +232,14 @@ const PatientsList = () => {
 
          dataSource.push(newObj)
       })
-
-      setPatientsTable(() => dataSource)
-      setBackupList(dataSource)
+      // console.log('dataSource-2: ', dataSource);
+      setPatientsTable((current) => [...current, ...dataSource])
+      setBackupList((current) => [...current, ...dataSource])
+      // setPatientsTable(dataSource)
+      // setBackupList(dataSource)
    }, [patientsFetch.patients])
-
+   console.log('patients.length: ', patients.length);
+   console.log('totalItemsFetched: ', totalItemsFetched);
    useEffect(() => {
       let id = ""
       let path = history.location.pathname

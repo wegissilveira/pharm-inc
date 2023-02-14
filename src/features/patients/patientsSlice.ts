@@ -17,8 +17,9 @@ const initialState: PatientsState = {
 
 export const fetchPatients = createAsyncThunk(
   'patientsList/fetchPatients',
-  async (page: number) => {
-    const response = await http.getPatients(page)
+  // async (page: string, isFirstRender: boolean) => {    
+  async (fetchObj: {page: number, isFirstRender: boolean}) => {    
+    const response = await http.getPatients(fetchObj.page, fetchObj.isFirstRender)
     return response.data;
   }
 );
@@ -33,8 +34,12 @@ export const patientsSlice = createSlice({
         state.status = 'loading'
       })
       .addCase(fetchPatients.fulfilled, (state, action) => {
+        // console.log('STATE: ', state.patients);
+        // console.log('action: ', action.payload.results);
+        
         state.status = 'success'
-        state.patients = state.patients.concat(action.payload.results)
+        // state.patients = state.patients.concat(action.payload.results)
+        state.patients = action.payload.results
       })
       .addCase(fetchPatients.rejected, (state) => {
         state.status = 'failed'
