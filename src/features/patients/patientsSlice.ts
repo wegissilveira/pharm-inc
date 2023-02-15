@@ -35,7 +35,7 @@ export const patientsSlice = createSlice({
       })
       .addCase(fetchPatients.fulfilled, (state, action) => {
         // console.log('STATE: ', state.patients);
-        // console.log('action: ', action.payload.results);
+        console.log('action: ', action.payload.results);
         
         state.status = 'success'
         // state.patients = state.patients.concat(action.payload.results)

@@ -26,11 +26,12 @@ const PatientsModal = (props: Props) => {
    const { currentPatient, toggleModal } = props
 
    const [address, setAddress] = useState<string>("")
-   const [fullName, setFullName] = useState<string>("")
+   // const [fullName, setFullName] = useState<string>("")
 
    const {
       picture,
-      name,
+      // name,
+      formattedName,
       email,
       gender,
       birthDate,
@@ -41,6 +42,7 @@ const PatientsModal = (props: Props) => {
       url,
    } = currentPatient
 
+   // Não precisa do effect. Criar funções fora para formatar os nomes
    useEffect(() => {
       let formattedAddress = `
             ${location.street.name}, ${location.street.number} - ${location.city}, ${location.country}
@@ -48,10 +50,10 @@ const PatientsModal = (props: Props) => {
       setAddress(formattedAddress)
    }, [location])
 
-   useEffect(() => {
-      let formattedName = `${name.title} ${name.first} ${name.last}`
-      setFullName(formattedName)
-   }, [name])
+   // useEffect(() => {
+   //    let formattedName = `${name.title} ${name.first} ${name.last}`
+   //    setFullName(formattedName)
+   // }, [name])
 
    return createPortal(
       <>
@@ -66,7 +68,7 @@ const PatientsModal = (props: Props) => {
                   alt="Patient"
                   className={classes["Modal-patientImg"]}
                />
-               <h1 className={classes["Modal-patientName"]}>{fullName}</h1>
+               <h1 className={classes["Modal-patientName"]}>{formattedName}</h1>
                <div className={classes["Modal-patientDetails"]}>
                   <p><span>Email: </span>{email}</p>
                   <p><span>Gender: </span>{gender}</p>

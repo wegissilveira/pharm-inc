@@ -9,6 +9,7 @@ export default interface IPatientsData {
         first: string,
         last: string,
     },
+    formattedName: string,
     email: string,
     gender: string,
     dob: {

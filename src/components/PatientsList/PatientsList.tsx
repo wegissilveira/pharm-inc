@@ -34,13 +34,12 @@ const getPage = () => {
 }
 
 
+
 const PatientsList = () => {
-   const [patientsTable, setPatientsTable] = useState<IDataSource[]>([])
-   const [backupList, setBackupList] = useState<IDataSource[]>([])
-   // const [patients, setPatients] = useState<IPatientsData[]>([])
+   const [backupList, setBackupList] = useState<IPatientsData[]>([])
    const [patients, setPatients] = useState<IPatientsData[]>([])
    const [currentPatientId, setCurrentPatientId] = useState<string>("")
-   const [totalItemsFetched, setTotalItemsFetched] = useState<number>(0)
+   // const [totalItemsFetched, setTotalItemsFetched] = useState<number>(0)
 
    const patientsFetch = useAppSelector(getData)
    const dispatch = useAppDispatch()
@@ -50,8 +49,8 @@ const PatientsList = () => {
    const columns = [
       {
          title: "Name",
-         dataIndex: "name",
-         key: "name",
+         dataIndex: "formattedName",
+         key: "formattedName",
          align: "center" as "center",
       },
       {
@@ -62,8 +61,8 @@ const PatientsList = () => {
       },
       {
          title: "Birth",
-         dataIndex: "birth",
-         key: "birth",
+         dataIndex: "birthDate",
+         key: "birthDate",
          align: "center" as "center",
       },
       {
@@ -86,14 +85,14 @@ const PatientsList = () => {
    const filterTablePerNameHandler = (search: string) => {
       let patientsFiltered = [...backupList]
 
-      patientsFiltered = patientsFiltered.filter((patient, index) => {
-         let lowName: string = patient.name.toLowerCase()
+      patientsFiltered = patientsFiltered.filter((patient) => {
+         let lowName: string = patient.formattedName.toLowerCase()
          let lowSearch = search.toLowerCase()
          return lowName.includes(lowSearch)
       })
 
       if (patientsFiltered.length > 0) {
-         setPatientsTable(patientsFiltered)
+         setPatients(patientsFiltered)
       } else {
          alert("There is no patient with the entered name!")
       }
@@ -103,20 +102,20 @@ const PatientsList = () => {
       if (filter !== "both") {
          let patientsFiltered = [...backupList]
 
-         patientsFiltered = patientsFiltered.filter((patient, index) => {
+         patientsFiltered = patientsFiltered.filter((patient) => {
             let lowName = patient.gender.toLowerCase()
             let lowSearch = filter.toLowerCase()
             return lowName === lowSearch
          })
 
-         setPatientsTable(patientsFiltered)
+         setPatients(patientsFiltered)
       } else {
-         setPatientsTable(backupList)
+         setPatients(backupList)
       }
    }
 
    const ResetSearchHandler = () => {
-      setPatientsTable(backupList)
+      setPatients(backupList)
    }
 
    const loadPatientsHandler = useCallback(() => {
@@ -139,27 +138,26 @@ const PatientsList = () => {
             }
          }
 
-         // Array.from(Array(Number(page)).keys()).forEach((page, index) => {
-         //    let pageFetch = index + 1
-         //    console.log('pageFetch: ', pageFetch);
+         Array.from(Array(Number(page)).keys()).forEach((page, index) => {
+            let pageFetch = index + 1
+            console.log('pageFetch: ', pageFetch);
             
-            dispatch(fetchPatients({page: getPage(), isFirstRender: true}))
-         // })
+            // dispatch(fetchPatients({page: getPage(), isFirstRender: true}))
+            dispatch(fetchPatients({page: pageFetch, isFirstRender: true}))
+         })
          initialRender.current = false
       } else {
          let newPage = Number(page) + 1
          history.push(`${process.env.PUBLIC_URL}/page=${newPage}&`)
-         // dispatch(fetchPatients(Number(newPage)))
          dispatch(fetchPatients(({page: Number(newPage), isFirstRender: false})))
       }
 
-      let totalItems = itemsPerPage * Number(page)
+      // let totalItems = itemsPerPage * Number(page)
 
-      setTotalItemsFetched(totalItems)
+      // setTotalItemsFetched(totalItems)
    }, [dispatch, history])
 
    const toggleModalHandler = (id: String | null, open?: boolean) => {
-      // let path = history.location.pathname
       let path = history.location.pathname
       let page: number | string = path.substring(
          path.indexOf("=") + 1,
@@ -200,46 +198,18 @@ const PatientsList = () => {
       updatedPatientsList = updatedPatientsList.map((patient, index) => {
          return {
             ...patient,
+            key: patient.name.first+'-'+index,
             id: index + 1,
             url: `${baseURL}/page=${page}&id:${index + 1}`,
             birthDate: formatDateHandler(patient.dob.date),
+            formattedName: `${patient.name.title} ${patient.name.first} ${patient.name.last}`
          }
       })
 
-      setPatients(updatedPatientsList)
+      setPatients(current => [...current, ...updatedPatientsList])
+      setBackupList((current) => [...current, ...updatedPatientsList])
    }, [patientsFetch.patients, history])
-
-   // Geral a lista de pacientes inicialmente partir da requisição
-   // Acho que a lista está sendo reconstruída a cada vez que mostrar mais é clicado
-   // O ideal é manter a lista já existente e só acrescentar os novos itens
-   // Analisar se estou refazendo a requisição de tudo ou se estou fazendo a cada 50 e somente completando
-   // Caso esteja só completando basta adaptar para que a state receba 50 de cada vez e não seja reiniciada
-   // Caso contrário a lógica de requisição deve ser refeita, provavelmente há algo na doc
-   // Mas acredito que esteja buscando a cda 50 e não todos todas as vezes
-   useEffect(() => {
-      let dataSource: IDataSource[] = []
-      // console.log('dataSource: ', dataSource);
-      // console.log('patientsTable: ', patientsTable);
-      
-      patientsFetch.patients.forEach((patient, index) => {
-         let newObj = {} as IDataSource
-
-         newObj.key = patient.name.first+'-'+index
-         newObj.name = `${patient.name.title} ${patient.name.first} ${patient.name.last}`
-         newObj.gender = patient.gender
-         newObj.birth = formatDateHandler(patient.dob.date)
-         newObj.id = index + 1
-
-         dataSource.push(newObj)
-      })
-      // console.log('dataSource-2: ', dataSource);
-      setPatientsTable((current) => [...current, ...dataSource])
-      setBackupList((current) => [...current, ...dataSource])
-      // setPatientsTable(dataSource)
-      // setBackupList(dataSource)
-   }, [patientsFetch.patients])
-   console.log('patients.length: ', patients.length);
-   console.log('totalItemsFetched: ', totalItemsFetched);
+   
    useEffect(() => {
       let id = ""
       let path = history.location.pathname
@@ -257,9 +227,10 @@ const PatientsList = () => {
       path.indexOf("&")
    )
 
+
    return (
       <div>
-         {patients.length >= totalItemsFetched && (
+         {/* {patients.length >= totalItemsFetched && ( */}
             <>
                <FloatingButton />
                <PatientsModalRoute 
@@ -282,7 +253,8 @@ const PatientsList = () => {
 							searchPerGenderCallback={filterTablePerGenderHandler}
 						/>
                   <Table
-                     dataSource={patientsTable}
+                     // dataSource={patientsTable}
+                     dataSource={patients}
                      columns={columns}
                      bordered
                      pagination={false}
@@ -301,7 +273,7 @@ const PatientsList = () => {
                   </Button>
                </Space>
             </>
-         )}
+         {/* )} */}
          {patients.length === 0 && (
             <div
                style={{
