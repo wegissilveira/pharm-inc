@@ -7,39 +7,20 @@ import { Table, Button, Space, Spin } from "antd"
 import "antd/dist/antd.css"
 import { useHistory } from "react-router"
 
+import { formatDate } from "./utils/formatDate"
+import { getCurrentPage } from "./utils/getCurrentPage"
+
 import FloatingButton from "components/PatientsList/FloatingButton/FloatingButton"
 
 import IPatientsData from "models/PatientsModel"
 import FilterComponent from "./FilterComponent/FilterComponent"
 import PatientsModalRoute from "./PatientsModalRoute/PatientsModalRoute"
 
-export interface IDataSource {
-   key: string
-   name: string
-   gender: string
-   birth: string
-   id: number
-}
-
-export let itemsPerPage = 50
-
-const getPage = () => {
-   const path = window.location.pathname
-   let page: number | string = path.substring(
-      path.indexOf("=") + 1,
-      path.indexOf("&")
-   )   
-
-   return Number(page) 
-}
-
-
 
 const PatientsList = () => {
-   const [backupList, setBackupList] = useState<IPatientsData[]>([])
+   const [resetList, setResetList] = useState<IPatientsData[]>([])
    const [patients, setPatients] = useState<IPatientsData[]>([])
    const [currentPatientId, setCurrentPatientId] = useState<string>("")
-   // const [totalItemsFetched, setTotalItemsFetched] = useState<number>(0)
 
    const patientsFetch = useAppSelector(getData)
    const dispatch = useAppDispatch()
@@ -83,10 +64,10 @@ const PatientsList = () => {
    ]
 
    const filterTablePerNameHandler = (search: string) => {
-      let patientsFiltered = [...backupList]
+      let patientsFiltered = [...resetList]
 
       patientsFiltered = patientsFiltered.filter((patient) => {
-         let lowName: string = patient.formattedName.toLowerCase()
+         let lowName = patient.formattedName.toLowerCase()
          let lowSearch = search.toLowerCase()
          return lowName.includes(lowSearch)
       })
@@ -100,7 +81,7 @@ const PatientsList = () => {
 
    const filterTablePerGenderHandler = (filter: string) => {
       if (filter !== "both") {
-         let patientsFiltered = [...backupList]
+         let patientsFiltered = [...resetList]
 
          patientsFiltered = patientsFiltered.filter((patient) => {
             let lowName = patient.gender.toLowerCase()
@@ -110,21 +91,18 @@ const PatientsList = () => {
 
          setPatients(patientsFiltered)
       } else {
-         setPatients(backupList)
+         setPatients(resetList)
       }
    }
 
    const ResetSearchHandler = () => {
-      setPatients(backupList)
+      setPatients(resetList)
    }
 
    const loadPatientsHandler = useCallback(() => {
-      let path = history.location.pathname
-      let page: number | string = path.substring(
-         path.indexOf("=") + 1,
-         path.indexOf("&")
-      )
-      let id = path.substring(path.lastIndexOf(":") + 1, path.length)
+      const path = history.location.pathname
+      let page = getCurrentPage()
+      const id = path.substring(path.lastIndexOf(":") + 1, path.length)
 
       if (initialRender.current) {
          if (page === "") {
@@ -140,29 +118,20 @@ const PatientsList = () => {
 
          Array.from(Array(Number(page)).keys()).forEach((page, index) => {
             let pageFetch = index + 1
-            console.log('pageFetch: ', pageFetch);
             
-            // dispatch(fetchPatients({page: getPage(), isFirstRender: true}))
             dispatch(fetchPatients({page: pageFetch, isFirstRender: true}))
          })
          initialRender.current = false
+
       } else {
          let newPage = Number(page) + 1
          history.push(`${process.env.PUBLIC_URL}/page=${newPage}&`)
          dispatch(fetchPatients(({page: Number(newPage), isFirstRender: false})))
       }
-
-      // let totalItems = itemsPerPage * Number(page)
-
-      // setTotalItemsFetched(totalItems)
    }, [dispatch, history])
 
    const toggleModalHandler = (id: String | null, open?: boolean) => {
-      let path = history.location.pathname
-      let page: number | string = path.substring(
-         path.indexOf("=") + 1,
-         path.indexOf("&")
-      )
+      const page = getCurrentPage()
 
       if (open === false) {
          history.push(`${process.env.PUBLIC_URL}/page=${page}&`)
@@ -170,10 +139,6 @@ const PatientsList = () => {
          // history.push(`${process.env.PUBLIC_URL}${path}id:${id}`) // => Caminho para localhost
          history.push(`${process.env.PUBLIC_URL}/page=${page}&id:${id}`) // => Caminho para servidor online
       }
-   }
-
-   const formatDateHandler = (date: any) => {
-      return date.substr(0, date.indexOf("T"))
    }
 
    useEffect(() => {
@@ -189,11 +154,7 @@ const PatientsList = () => {
             ? window.location.host + "/pharma-inc"
             : "https://wegis.com.br/pharma-inc/"
 
-      let path = history.location.pathname
-      let page: number | string = path.substring(
-         path.indexOf("=") + 1,
-         path.indexOf("&")
-      )
+      const page = getCurrentPage()
 
       updatedPatientsList = updatedPatientsList.map((patient, index) => {
          return {
@@ -201,13 +162,13 @@ const PatientsList = () => {
             key: patient.name.first+'-'+index,
             id: index + 1,
             url: `${baseURL}/page=${page}&id:${index + 1}`,
-            birthDate: formatDateHandler(patient.dob.date),
+            birthDate: formatDate(patient.dob.date),
             formattedName: `${patient.name.title} ${patient.name.first} ${patient.name.last}`
          }
       })
 
       setPatients(current => [...current, ...updatedPatientsList])
-      setBackupList((current) => [...current, ...updatedPatientsList])
+      setResetList((current) => [...current, ...updatedPatientsList])
    }, [patientsFetch.patients, history])
    
    useEffect(() => {
@@ -217,41 +178,34 @@ const PatientsList = () => {
       if (path.indexOf("id:") !== -1) {
          id = path.substr(path.indexOf(":") + 1)
       }
-
+      
       setCurrentPatientId(id)
    }, [history.location.pathname])
 
-   let path = history.location.pathname
-   let page: number | string = path.substring(
-      path.indexOf("=") + 1,
-      path.indexOf("&")
-   )
-
 
    return (
-      <div>
-         {/* {patients.length >= totalItemsFetched && ( */}
+      <div>         
+         {patients.length > 0 &&
             <>
-               <FloatingButton />
+               <FloatingButton />            
                <PatientsModalRoute 
-                  page={page}
+                  page={getCurrentPage()}
                   currentPatientId={currentPatientId}
                   patients={patients}
                   toggleModalHandler={toggleModalHandler}
-               />
+               />            
                <Space
                   direction="vertical"
                   style={{ 
-							width: "90%", 
-							marginLeft: "5%",
-							
-						}}
+                     width: "90%", 
+                     marginLeft: "5%",                     
+                  }}
                >
-						<FilterComponent 
-							searchCallback={filterTablePerNameHandler}
-							resetSearchCallback={ResetSearchHandler}
-							searchPerGenderCallback={filterTablePerGenderHandler}
-						/>
+                  <FilterComponent 
+                     searchCallback={filterTablePerNameHandler}
+                     resetSearchCallback={ResetSearchHandler}
+                     searchPerGenderCallback={filterTablePerGenderHandler}
+                  />
                   <Table
                      // dataSource={patientsTable}
                      dataSource={patients}
@@ -272,8 +226,7 @@ const PatientsList = () => {
                      Load More Patients
                   </Button>
                </Space>
-            </>
-         {/* )} */}
+            </>}
          {patients.length === 0 && (
             <div
                style={{

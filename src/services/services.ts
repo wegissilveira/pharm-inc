@@ -1,6 +1,5 @@
 import { http } from 'http-common'
-
-import { itemsPerPage } from 'components/PatientsList/PatientsList'
+import { itemsPerPage } from 'components/PatientsList/utils/itemsPerPage'
 
 
 const getPatients = (page: number, isFirstRender: boolean) => {

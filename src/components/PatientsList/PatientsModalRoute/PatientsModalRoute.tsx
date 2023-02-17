@@ -16,7 +16,7 @@ const PatientsModalRoute = (props: Props) => {
       patients,
       toggleModalHandler
    } = props
-
+   
    return (
       <Route
          path={`${process.env.PUBLIC_URL}/page=${page}&id:${currentPatientId}`}

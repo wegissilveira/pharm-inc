@@ -1,7 +1,6 @@
 import classes from './FilterComponent.module.css'
 
-
-import PatientsListFilter from "components/PatientsList/PatientsListFilter/PatientsListFilter"
+import PatientsListFilter from "components/PatientsList/FilterComponent/PatientsListFilter/PatientsListFilter"
 import SearchComponent from "./SearchComponent/SearchComponent"
 
 type Props = {
